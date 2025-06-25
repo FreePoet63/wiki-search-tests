@@ -26,7 +26,7 @@ jobs:
           publish_branch: gh-pages
           publish_dir: ./target/site/allure-maven-plugin
     - name: Save Allure results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
              name: Allure Results
              path: target/allure-results

@@ -30,8 +30,3 @@ jobs:
       with:
              name: Allure Results
              path: target/allure-results
-
-    - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy 
-      env:
-        GITHUB_TOKEN: ${{ github.token }}

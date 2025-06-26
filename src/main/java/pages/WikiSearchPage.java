@@ -5,7 +5,10 @@ import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import org.openqa.selenium.Keys;
 
-import static com.codeborne.selenide.Condition.text;
+import java.time.Duration;
+
+import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
 
 /**
@@ -18,7 +21,7 @@ import static com.codeborne.selenide.Selenide.*;
 public class WikiSearchPage {
     private final SelenideElement searchInput = $("#searchInput");
     private final SelenideElement searchButton = $("#searchButton");
-    private final ElementsCollection suggests = $$("div.mw-searchSuggest-link");
+    private final ElementsCollection suggests = $$("a.mw-searchSuggest-link");
     private final SelenideElement firstSuggestion = $(".suggestions-result");
     private final SelenideElement lastSuggestion = $(".suggestions-special");
     private final SelenideElement pageTitle = $("h1");
@@ -52,9 +55,34 @@ public class WikiSearchPage {
     /**
      * Удаляет последнюю букву из поля поиска.
      */
-    @Step("Удалить последнюю букву из поля поиска")
-    public void deleteLastLetter() {
+    @Step("Удалить последний cимвол из поля поиска")
+    public void deleteLastSymbol() {
+        suggests.shouldBe(sizeGreaterThan(0), Duration.ofSeconds(5));
         searchInput.sendKeys(Keys.BACK_SPACE);
+    }
+
+    /**
+     * Вводим пробел.
+     */
+    @Step("Ввести пробел")
+    public void inputSpace() {
+        searchInput.sendKeys(Keys.SPACE);
+    }
+
+    /**
+     * Закрывает список саджестов.
+     */
+    @Step("Закрыть саджесты")
+    public void closeSuggests() {
+        searchInput.sendKeys(Keys.ESCAPE);
+    }
+
+    /**
+     * Саджестов нет.
+     */
+    @Step("Саджестов нет")
+    public void notSuggests() {
+        suggests.forEach(el -> el.shouldBe(hidden));
     }
 
     /**
@@ -64,7 +92,14 @@ public class WikiSearchPage {
      */
     @Step("Проверить, что все саджесты содержат текст: {expected}")
     public void shouldSeeSuggestsWithText(String expected) {
-        suggests.forEach(e -> e.shouldHave(text(expected)));
+        // Ждём, пока появится хотя бы одна подсказка (таймаут — 5 секунд)
+        suggests.shouldBe(sizeGreaterThan(0), Duration.ofSeconds(5));
+
+        // Проверяем каждую подсказку: она видима и содержит подстроку {expected}
+        suggests.forEach(e ->
+                e.shouldBe(visible)
+                        .shouldHave(text(expected))
+        );
     }
 
     /**
